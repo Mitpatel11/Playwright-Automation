@@ -95,11 +95,86 @@ test('Child Window Handling', async ({ browser }) => {
 
 
 
-test.only('Get By Locators', async ({ page }) => {
+test('Get By Locators', async ({ page }) => {
     await page.goto("https://www.rahulshettyacademy.com/angularpractice/");
     await page.getByLabel("Check me out if you Love IceCreams!").click();
     await page.getByLabel("Employed").check();
     await page.getByLabel("Gender").selectOption("Female");    // this works only if the options are within the selected tag. 
 
+    await page.getByPlaceholder("Password").fill("XYZ123");
+    await page.getByRole("button", { name: "Submit" }).click();
+
+    await page.getByText("Success! The Form has been submitted successfully!.").isVisible();
+    await page.getByRole("link", { name: "Shop" }).click();
+
+    await page.locator("app-card").filter({ hasText: "Nokia Edge" }).getByRole("button").click();
+
+    // there should be linkage between the form fields to enter the text. 
+    // as password is on other link and the text box field is on the other line.
+    // we should make sure they should be li nked with the for tag or should be in the line . basically there should be association between the two fields. 
 
 });
+
+
+
+test('Calendat Validations ', async ({ page }) => {
+
+    const month = "6";
+    const date = "12";
+    const year = "2027";
+    const expectedList = [month, date, year];
+    await page.goto("https://www.rahulshettyacademy.com/seleniumPractise/#/offers");
+
+    await page.locator(".react-date-picker__inputGroup").click();
+
+    await page.locator(".react-calendar__navigation__label").click();
+    await page.locator(".react-calendar__navigation__label").click();
+    await page.getByText(year).click();
+    await page.locator(".react-calendar__year-view__months__month").nth(Number(month) - 1).click();   // here as the const month is in the string we need to convert it to the Number first the do the minus.
+    await page.locator("//abbr[text()='" + date + "']").click();
+
+    // 1st way is to split 
+    // 2nd way is we write a common locator take into array and iterate it. the best way. 
+
+    const inputs = await page.locator(".react-date-picker__inputGroup__input");
+
+    for (let i = 0; i < expectedList.length; i++) {
+        const value = await inputs.nth(i).inputValue();
+        expect(value).toEqual(expectedList[i]);
+    }
+});
+
+test.only('PopUp Validations ', async ({ page }) => {
+
+    await page.goto("http://rahulshettyacademy.com/AutomationPractice/");
+
+    //await page.goto("htttps://google.com");
+    //await page.goBack();
+    //await page.goForward();
+
+    //check if element is in visible mode. 
+    await expect(page.locator("#displayed-text")).toBeVisible();
+    await page.locator("#hide-textbox").click();
+    await expect(page.locator("#displayed-text")).toBeHidden();
+
+    //JS popups / dialog
+    await page.on('dialog', dialog => dialog.accept());     // this listens for events to occur.. 
+    //await page.on('dialog', dialog => dialog.dismiss());
+    await page.locator("#confirmbtn").click();
+
+
+    //hover
+    await page.locator("#mousehover").hover();
+
+
+    //iframes or frameset. 
+    const framesPage = await page.frameLocator("#courses-iframe");  // this will give a new frame object so we store it. 
+    framesPage.locator("li a[href*='lifetime-access']:visible").click();
+
+    const textCheck = await framesPage.locator(".text h2").textContent();
+    console.log(textCheck.split(" ")[1]);
+
+
+
+});
+
